@@ -11,9 +11,9 @@ import android.widget.TextView
 import java.lang.NumberFormatException
 import kotlin.Double.Companion.NaN
 
-private const val DEFAULT_OPERATION = "="
 private const val STATE_PENDING_OPERATION = "pendingOperation"
 private const val STATE_PENDING_OPERAND = "operand"
+private const val STATE_OPERAND_STORED = "operandStored"
 
 class MainActivity : AppCompatActivity() {
     private val result: EditText by lazy(LazyThreadSafetyMode.NONE) { findViewById<EditText>(R.id.result) }
@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
 
     // Variables to hold operands and type of calculations
     private var operand: Double? = null
-    private var pendingOperation = DEFAULT_OPERATION
+    private var pendingOperation = "="
 
     // Shared preferences
     private var sharedPreferences: SharedPreferences? = null
@@ -87,6 +87,24 @@ class MainActivity : AppCompatActivity() {
         buttonMultiply.setOnClickListener(operationListener)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        if (operand != null) {
+            outState.putDouble(STATE_PENDING_OPERAND, operand!!)
+            outState.putBoolean(STATE_OPERAND_STORED, true)
+        }
+        outState.putString(STATE_PENDING_OPERATION, pendingOperation)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        pendingOperation = savedInstanceState.getString(STATE_PENDING_OPERATION)
+        displayOperator.text = pendingOperation
+        if (savedInstanceState.getBoolean(STATE_OPERAND_STORED)) {
+            operand = savedInstanceState.getDouble(STATE_PENDING_OPERAND)
+        }
+    }
+
     private fun performOperation(value: Double, operation: String) {
         if (operand == null) {
             operand = value
@@ -109,23 +127,6 @@ class MainActivity : AppCompatActivity() {
 
             result.setText(operand.toString())
             newNumber.setText("")
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        sharedPreferences?.edit()?.putString(STATE_PENDING_OPERATION, pendingOperation)?.apply()
-        sharedPreferences?.edit()?.putString(STATE_PENDING_OPERAND, operand?.toString())?.apply()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        pendingOperation = sharedPreferences?.getString(STATE_PENDING_OPERATION, DEFAULT_OPERATION) ?: DEFAULT_OPERATION
-        displayOperator.text = pendingOperation
-        try {
-            operand = sharedPreferences?.getString(STATE_PENDING_OPERAND, null)?.toDouble()
-        } catch (exception: NumberFormatException) {
-            operand = null
         }
     }
 }
