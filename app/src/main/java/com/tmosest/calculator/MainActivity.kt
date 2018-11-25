@@ -6,6 +6,8 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import java.lang.NumberFormatException
+import kotlin.Double.Companion.NaN
 
 class MainActivity : AppCompatActivity() {
     private val result: EditText by lazy(LazyThreadSafetyMode.NONE) { findViewById<EditText>(R.id.result) }
@@ -14,7 +16,6 @@ class MainActivity : AppCompatActivity() {
 
     // Variables to hold operands and type of calculations
     private var operand1: Double? = null
-    private var operand2: Double = 0.0
     private var pendingOperation = "="
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,9 +60,11 @@ class MainActivity : AppCompatActivity() {
 
         val operationListener = View.OnClickListener { v ->
             val op = (v as Button).text.toString()
-            val value = newNumber.text.toString()
-            if (value.isNotEmpty()) {
-                performOpertaion(value, op)
+            try {
+                val value = newNumber.text.toString().toDouble()
+                performOperation(value, op)
+            } catch (exception: NumberFormatException) {
+                newNumber.setText("")
             }
             pendingOperation = op
             displayOperator.text = pendingOperation
@@ -74,26 +77,24 @@ class MainActivity : AppCompatActivity() {
         buttonMultiply.setOnClickListener(operationListener)
     }
 
-    private fun performOpertaion(value: String, operation: String) {
+    private fun performOperation(value: Double, operation: String) {
         if (operand1 == null) {
-            operand1 = value.toDouble()
+            operand1 = value
         } else {
-            operand2 = value.toDouble()
-
             if (pendingOperation == "=") {
                 pendingOperation = operation
             }
 
             when (pendingOperation) {
-                "=" -> operand1 = operand2
-                "/" ->  if (operand2 == 0.0) {
-                            operand1 = Double.NaN
-                        } else {
-                            operand1 = operand1!! / operand2
-                        }
-                "*" -> operand1 = operand1!! * operand2
-                "-" -> operand1 = operand1!! - operand2
-                "+" -> operand1 = operand1!! + operand2
+                "=" -> operand1 = value
+                "/" -> operand1 = if (value == 0.0) {
+                    NaN
+                } else {
+                    operand1!! / value
+                }
+                "*" -> operand1 = operand1!! * value
+                "-" -> operand1 = operand1!! - value
+                "+" -> operand1 = operand1!! + value
             }
 
             result.setText(operand1.toString())
