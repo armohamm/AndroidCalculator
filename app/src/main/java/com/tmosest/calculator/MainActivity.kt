@@ -1,5 +1,7 @@
 package com.tmosest.calculator
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -9,18 +11,26 @@ import android.widget.TextView
 import java.lang.NumberFormatException
 import kotlin.Double.Companion.NaN
 
+private const val DEFAULT_OPERATION = "="
+private const val STATE_PENDING_OPERATION = "pendingOperation"
+private const val STATE_PENDING_OPERAND = "operand"
+
 class MainActivity : AppCompatActivity() {
     private val result: EditText by lazy(LazyThreadSafetyMode.NONE) { findViewById<EditText>(R.id.result) }
     private val newNumber by lazy(LazyThreadSafetyMode.NONE) { findViewById<EditText>(R.id.newNumber) }
     private val displayOperator by lazy(LazyThreadSafetyMode.NONE) { findViewById<TextView>(R.id.operation) }
 
     // Variables to hold operands and type of calculations
-    private var operand1: Double? = null
-    private var pendingOperation = "="
+    private var operand: Double? = null
+    private var pendingOperation = DEFAULT_OPERATION
+
+    // Shared preferences
+    private var sharedPreferences: SharedPreferences? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        sharedPreferences = this.getSharedPreferences("com.tmosest.calculator.prefs", Context.MODE_PRIVATE)
 
         val button0: Button = findViewById(R.id.button0)
         val button1: Button = findViewById(R.id.button1)
@@ -78,27 +88,44 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun performOperation(value: Double, operation: String) {
-        if (operand1 == null) {
-            operand1 = value
+        if (operand == null) {
+            operand = value
         } else {
             if (pendingOperation == "=") {
                 pendingOperation = operation
             }
 
             when (pendingOperation) {
-                "=" -> operand1 = value
-                "/" -> operand1 = if (value == 0.0) {
+                "=" -> operand = value
+                "/" -> operand = if (value == 0.0) {
                     NaN
                 } else {
-                    operand1!! / value
+                    operand!! / value
                 }
-                "*" -> operand1 = operand1!! * value
-                "-" -> operand1 = operand1!! - value
-                "+" -> operand1 = operand1!! + value
+                "*" -> operand = operand!! * value
+                "-" -> operand = operand!! - value
+                "+" -> operand = operand!! + value
             }
 
-            result.setText(operand1.toString())
+            result.setText(operand.toString())
             newNumber.setText("")
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sharedPreferences?.edit()?.putString(STATE_PENDING_OPERATION, pendingOperation)?.apply()
+        sharedPreferences?.edit()?.putString(STATE_PENDING_OPERAND, operand?.toString())?.apply()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        pendingOperation = sharedPreferences?.getString(STATE_PENDING_OPERATION, DEFAULT_OPERATION) ?: DEFAULT_OPERATION
+        displayOperator.text = pendingOperation
+        try {
+            operand = sharedPreferences?.getString(STATE_PENDING_OPERAND, null)?.toDouble()
+        } catch (exception: NumberFormatException) {
+            operand = null
         }
     }
 }
