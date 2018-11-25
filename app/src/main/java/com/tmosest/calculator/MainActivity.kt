@@ -56,6 +56,17 @@ class MainActivity : AppCompatActivity() {
         buttonPlus.setOnClickListener(operationListener)
         buttonDivide.setOnClickListener(operationListener)
         buttonMultiply.setOnClickListener(operationListener)
+
+        val negationListener = View.OnClickListener { v ->
+            try {
+                var value = newNumber.text.toString().toDouble() * -1
+                newNumber.setText(value.toString())
+            } catch (exception: NumberFormatException) {
+                newNumber.setText("-")
+            }
+        }
+
+        buttonNegate.setOnClickListener(negationListener)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

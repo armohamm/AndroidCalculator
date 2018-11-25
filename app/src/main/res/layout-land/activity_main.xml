@@ -128,6 +128,15 @@
             app:layout_constraintBaseline_toBaselineOf="@+id/button9" app:layout_constraintStart_toEndOf="@+id/button9"
             android:layout_marginStart="8dp" android:minHeight="48dp"/>
     <Button
+            android:text="neg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonMinus"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
+            app:layout_constraintStart_toEndOf="@+id/buttonDivide"
+            app:layout_constraintBaseline_toBaselineOf="@+id/buttonDivide" android:layout_marginStart="69dp"/>
+    <Button
             android:text="*"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
