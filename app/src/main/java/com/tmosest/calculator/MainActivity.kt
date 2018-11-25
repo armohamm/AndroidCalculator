@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         val buttonPlus: Button = findViewById(R.id.buttonPlus)
 
         val listener = View.OnClickListener { v ->
-            val b  = v as Button
+            val b = v as Button
             newNumber.append(b.text)
         }
 
