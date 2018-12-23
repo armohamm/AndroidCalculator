@@ -57,16 +57,16 @@ class MainActivity : AppCompatActivity() {
         buttonDivide.setOnClickListener(operationListener)
         buttonMultiply.setOnClickListener(operationListener)
 
-        val negationListener = View.OnClickListener { v ->
+        val negationListener = View.OnClickListener {
             try {
-                var value = newNumber.text.toString().toDouble() * -1
+                val value = newNumber.text.toString().toDouble() * -1
                 newNumber.setText(value.toString())
             } catch (exception: NumberFormatException) {
                 newNumber.setText("-")
             }
         }
 
-        buttonNegate.setOnClickListener(negationListener)
+        buttonNegate?.setOnClickListener(negationListener)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        pendingOperation = savedInstanceState.getString(STATE_PENDING_OPERATION)
+        pendingOperation = savedInstanceState.getString(STATE_PENDING_OPERATION) ?: "="
         operation.text = pendingOperation
         if (savedInstanceState.getBoolean(STATE_OPERAND_STORED)) {
             operand = savedInstanceState.getDouble(STATE_PENDING_OPERAND)
