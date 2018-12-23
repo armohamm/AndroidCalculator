@@ -1,6 +1,8 @@
 package com.tmosest.calculator
 
+import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
+import android.arch.lifecycle.Transformations
 import android.arch.lifecycle.ViewModel
 import android.util.Log
 
@@ -12,9 +14,17 @@ class CalculatorViewModel : ViewModel() {
     private var operand: Double? = null
     private var pendingOperation = "="
 
-    val result = MutableLiveData<String>()
-    val newNumber = MutableLiveData<String>()
-    val operation = MutableLiveData<String>()
+    private val result = MutableLiveData<Double>()
+    val stringResult : LiveData<String>
+        get() = Transformations.map(result, Double::toString)
+
+    private val newNumber = MutableLiveData<String>()
+    val stringNewNumber : LiveData<String>
+        get() = newNumber
+
+    private val operation = MutableLiveData<String>()
+    val stringOperation : LiveData<String>
+        get() = operation
 
     fun digitPressed(caption: String) {
         if (newNumber.value != null) {
@@ -74,7 +84,7 @@ class CalculatorViewModel : ViewModel() {
                 "+" -> operand = operand!! + value
             }
 
-            result.value = operand.toString()
+            result.value = operand
             newNumber.value = ""
         }
     }
