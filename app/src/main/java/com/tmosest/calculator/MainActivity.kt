@@ -1,30 +1,27 @@
 package com.tmosest.calculator
 
-import android.support.v7.app.AppCompatActivity
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.Button
 import kotlinx.android.synthetic.main.activity_main.*
-import java.lang.NumberFormatException
-import kotlin.Double.Companion.NaN
-
-private const val STATE_PENDING_OPERATION = "pendingOperation"
-private const val STATE_PENDING_OPERAND = "operand"
-private const val STATE_OPERAND_STORED = "operandStored"
 
 class MainActivity : AppCompatActivity() {
-    private var operand: Double? = null
-    private var pendingOperation = "="
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        operation.text = pendingOperation
+        val viewModel = ViewModelProviders.of(this).get(CalculatorViewModel::class.java)
+        viewModel.result.observe(this, Observer<String>{ stringResult -> result.setText(stringResult) })
+        viewModel.newNumber.observe(this, Observer<String>{ stringNumber -> newNumber.setText(stringNumber) })
+        viewModel.operation.observe(this, Observer<String>{ stringOperation -> operation.setText(stringOperation) })
+
 
         val listener = View.OnClickListener { v ->
-            val b = v as Button
-            newNumber.append(b.text)
+            viewModel.digitPressed((v as Button).text.toString())
         }
 
         button0.setOnClickListener(listener)
@@ -40,15 +37,7 @@ class MainActivity : AppCompatActivity() {
         buttonDot.setOnClickListener(listener)
 
         val operationListener = View.OnClickListener { v ->
-            val op = (v as Button).text.toString()
-            try {
-                val value = newNumber.text.toString().toDouble()
-                performOperation(value, op)
-            } catch (exception: NumberFormatException) {
-                newNumber.setText("")
-            }
-            pendingOperation = op
-            operation.text = pendingOperation
+            viewModel.operandPressed((v as Button).text.toString())
         }
 
         buttonEquals.setOnClickListener(operationListener)
@@ -58,57 +47,9 @@ class MainActivity : AppCompatActivity() {
         buttonMultiply.setOnClickListener(operationListener)
 
         val negationListener = View.OnClickListener {
-            try {
-                val value = newNumber.text.toString().toDouble() * -1
-                newNumber.setText(value.toString())
-            } catch (exception: NumberFormatException) {
-                newNumber.setText("-")
-            }
+            viewModel.negPressed()
         }
 
         buttonNegate?.setOnClickListener(negationListener)
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        if (operand != null) {
-            outState.putDouble(STATE_PENDING_OPERAND, operand!!)
-            outState.putBoolean(STATE_OPERAND_STORED, true)
-        }
-        outState.putString(STATE_PENDING_OPERATION, pendingOperation)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        pendingOperation = savedInstanceState.getString(STATE_PENDING_OPERATION) ?: "="
-        operation.text = pendingOperation
-        if (savedInstanceState.getBoolean(STATE_OPERAND_STORED)) {
-            operand = savedInstanceState.getDouble(STATE_PENDING_OPERAND)
-        }
-    }
-
-    private fun performOperation(value: Double, operation: String) {
-        if (operand == null) {
-            operand = value
-        } else {
-            if (pendingOperation == "=") {
-                pendingOperation = operation
-            }
-
-            when (pendingOperation) {
-                "=" -> operand = value
-                "/" -> operand = if (value == 0.0) {
-                    NaN
-                } else {
-                    operand!! / value
-                }
-                "*" -> operand = operand!! * value
-                "-" -> operand = operand!! - value
-                "+" -> operand = operand!! + value
-            }
-
-            result.setText(operand.toString())
-            newNumber.setText("")
-        }
     }
 }
