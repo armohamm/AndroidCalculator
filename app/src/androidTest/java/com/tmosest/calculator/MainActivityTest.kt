@@ -19,7 +19,7 @@ class MainActivityTest {
     public var rule = ActivityTestRule(MainActivity::class.java)
 
     @Test
-    fun clickDigitButtonShouldUpdateInput() {
+    fun clickingDigitButtonsShouldUpdateInput() {
         onView(withId(R.id.button0)).perform(click())
         onView(withId(R.id.button1)).perform(click())
         onView(withId(R.id.button2)).perform(click())
@@ -31,5 +31,26 @@ class MainActivityTest {
         onView(withId(R.id.button8)).perform(click())
         onView(withId(R.id.button9)).perform(click())
         onView(withId(R.id.newNumber)).check(matches(withText("0123456789")))
+    }
+
+    @Test
+    fun clickingNegationButtonShouldAddNegativeSignThenRemoveIt() {
+        onView(withId(R.id.buttonNegate)).perform(click())
+        onView(withId(R.id.newNumber)).check(matches(withText("-")))
+        onView(withId(R.id.button1)).perform(click())
+        onView(withId(R.id.button2)).perform(click())
+        onView(withId(R.id.newNumber)).check(matches(withText("-12")))
+        onView(withId(R.id.buttonNegate)).perform(click())
+        onView(withId(R.id.newNumber)).check(matches(withText("12")))
+    }
+
+    @Test
+    fun clickingDecimalButtonShouldAddOnlyOneDot() {
+        onView(withId(R.id.buttonDot)).perform(click())
+        onView(withId(R.id.newNumber)).check(matches(withText(".")))
+        onView(withId(R.id.button2)).perform(click())
+        onView(withId(R.id.newNumber)).check(matches(withText(".2")))
+        onView(withId(R.id.buttonDot)).perform(click())
+        onView(withId(R.id.newNumber)).check(matches(withText(".2")))
     }
 }

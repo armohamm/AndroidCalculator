@@ -29,6 +29,9 @@ class BigDecimalViewModel : ViewModel() {
 
     fun digitPressed(caption: String) {
         if (newNumber.value != null) {
+            if (caption == "." && newNumber.toString().contains(".")) {
+                return
+            }
             newNumber.value += caption
         } else {
             newNumber.value = caption
